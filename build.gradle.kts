@@ -3,12 +3,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
 	id("org.springframework.boot") version "2.3.1.RELEASE"
 	id("io.spring.dependency-management") version "1.0.9.RELEASE"
+	id("com.google.cloud.tools.jib") version "1.3.0"
 	kotlin("jvm") version "1.3.72"
 	kotlin("plugin.spring") version "1.3.72"
 }
 
-group = "io.jrb.labs"
-version = "0.0.1-SNAPSHOT"
+val group = "io.jrb.labs"
+val version = "0.0.1-SNAPSHOT"
+val buildNumber by extra("0")
+
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -32,6 +35,17 @@ dependencies {
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+	}
+}
+
+jib {
+	to {
+		image = "brulejr/taskz-microservice"
+		tags = setOf("$version", "$version.${extra["buildNumber"]}")
+		auth {
+			username = System.getenv("DOCKERHUB_CREDENTIALS_USR") ?: "username"
+			password = System.getenv("DOCKERHUB_CREDENTIALS_PSW") ?: "password"
+		}
 	}
 }
 
